@@ -1,0 +1,205 @@
+{
+ "seed": 8296,
+ "predictions": {
+  "ml_f1": {
+   "text": "F1 ~0.88, precision cao hơn recall vì mô hình ưu tiên tránh đoán nhầm ham thành spam",
+   "time": "22:16:14"
+  },
+  "ml_lr": {
+   "text": "lr=0.001 thì loss giảm rất chậm và không thể hội tụ sau 300 epochs, lr=50 thì bước nhảy quá lớn làm loss dao động mạnh hoặc bùng nổ không thể tối ưu",
+   "time": "22:16:15"
+  },
+  "dl_curve": {
+   "text": "val loss không giảm mãi, mlp sẽ hơn logistic regression về F1",
+   "time": "22:16:19"
+  },
+  "dl_relu": {
+   "text": "Không có ReLU, mạng 2 lớp Linear liên tiếp tương đương với mô hình tuyến tính đơn giản (như Logistic Regression ở Phần 1) vì tích của 2 ma trận tuyến tính vẫn là một ma trận tuyến tính. Dự đoán F1 sẽ giảm xuống xấp xỉ kết quả của phần 1 (~0.93).",
+   "time": "22:16:21"
+  },
+  "emb_search": {
+   "text": "Kết quả gần nhất chắc chắn là spam vì truy vấn mô tả một kịch bản lừa đảo tặng kỳ nghỉ lễ đặc trưng. Embedding model hiểu ngữ nghĩa của cả câu nên sẽ tìm ra các tin nhắn spam có cùng mục đích tặng quà/trúng thưởng dù không trùng khớp chính xác từng từ khoá đơn lẻ.",
+   "time": "22:16:36"
+  },
+  "emb_tricky": {
+   "text": "Mô hình Encoder + LogReg sẽ đoán đúng nhiều hơn BoW vì có khả năng hiểu ngữ nghĩa của cả câu để nhận diện các bẫy né từ khóa hoặc từ khóa vô hại, trong khi BoW chỉ dựa vào sự xuất hiện đơn lẻ của từ nên dễ bị đánh lừa.",
+   "time": "22:16:39"
+  },
+  "llm_models": {
+   "text": "gpt-6.1661-terra cao hơn, chênh 0,1, đắt gấp 10 lần, llm thắng 3b",
+   "time": "22:16:40"
+  },
+  "llm_fewshot": {
+   "text": "F1 tăng, chi phí tăng gấp đôi",
+   "time": "22:16:40"
+  },
+  "tradeoff": {
+   "text": "Em dự đoán BoW + Logistic Regression sẽ nằm trên đường Pareto nhờ độ trễ thấp và F1 khá tốt. Embedding có thể cho F1 cao hơn nhưng chậm hơn; các LLM có thể vượt SLA 50 ms vì phải gọi API.",
+   "time": "22:16:40"
+  },
+  "hard_eval": {
+   "text": "Em dự đoán accuracy: BoW + Logistic Regression khoảng 55%, BoW + MLP khoảng 55%, embedding khoảng 65%, LLM zero-shot khoảng 70% và LLM có prompt phòng thủ khoảng 75%. BoW có thể khó nhất với nhóm né từ khóa; LLM có thể khó nhất với nhóm prompt injection.",
+   "time": "22:16:40"
+  }
+ },
+ "checks": {
+  "1.1 vectorize": true,
+  "1.2 sigmoid / predict_proba": true,
+  "1.3 train_logreg": true,
+  "1.4 metrics": true,
+  "2.1 build_mlp": true,
+  "2.2 train_mlp": true,
+  "3.1–3.2 cosine / top_k_similar": true,
+  "3.3 knn_predict": true,
+  "4.2–4.3 prompt / parse_label": true,
+  "4.1 + 4.4 call_openai / llm_classify_batch": false,
+  "tính tay: baseline_accuracy": true,
+  "tính tay: sigmoid_0": true,
+  "tính tay: f1_example": true,
+  "tính tay: cosine_example": true,
+  "tính tay: llm_cost_per_day": false
+ },
+ "experiments": [
+  {
+   "key": "ml_f1",
+   "time": "22:16:14"
+  },
+  {
+   "key": "ml_lr",
+   "time": "22:16:15"
+  },
+  {
+   "key": "dl_curve",
+   "time": "22:16:19"
+  },
+  {
+   "key": "dl_relu",
+   "time": "22:16:21"
+  },
+  {
+   "key": "emb_search",
+   "time": "22:16:36"
+  },
+  {
+   "key": "emb_tricky",
+   "time": "22:16:39"
+  },
+  {
+   "key": "llm_models",
+   "time": "22:16:40"
+  },
+  {
+   "key": "llm_fewshot",
+   "time": "22:16:40"
+  },
+  {
+   "key": "tradeoff",
+   "time": "22:16:40"
+  },
+  {
+   "key": "hard_eval",
+   "time": "22:16:40"
+  }
+ ],
+ "challenge": 4,
+ "challenge_results": [
+  {
+   "text": "A courier service has a parcel waiting for you. Confirm your details at the attached page to arrange delivery.",
+   "expected": "spam",
+   "bow": "spam",
+   "embedding_logreg": "ham",
+   "correct_bow": true,
+   "correct_embedding_logreg": false,
+   "explanation": "Spam né từ khoá: tạo áp lực xác nhận và dẫn tới trang lạ."
+  },
+  {
+   "text": "Your account review is due today. Reply with your login details so our team can keep the service active.",
+   "expected": "spam",
+   "bow": "ham",
+   "embedding_logreg": "spam",
+   "correct_bow": false,
+   "correct_embedding_logreg": true,
+   "explanation": "Spam né từ khoá: giả danh hỗ trợ và xin thông tin đăng nhập."
+  },
+  {
+   "text": "I won the quiz at work, but the free coffee is for everyone after the meeting.",
+   "expected": "ham",
+   "bow": "ham",
+   "embedding_logreg": "ham",
+   "correct_bow": true,
+   "correct_embedding_logreg": true,
+   "explanation": "Ham chứa win/free: ngữ cảnh là chuyện vui và cà phê nội bộ, không có lời mời đáng ngờ."
+  },
+  {
+   "text": "The free study group starts at six; win or lose, bring your notes and we will review together.",
+   "expected": "ham",
+   "bow": "ham",
+   "embedding_logreg": "ham",
+   "correct_bow": true,
+   "correct_embedding_logreg": true,
+   "explanation": "Ham chứa free/win: ngữ cảnh học tập, không có phần thưởng hay yêu cầu dữ liệu."
+  }
+ ],
+ "results": {
+  "1. BoW + LogReg (tự code)": {
+   "accuracy": 0.983225806451613,
+   "precision": 1.0,
+   "recall": 0.8712871287128713,
+   "f1": 0.9312169312169313,
+   "f1_SUB": 0.8571428571428571,
+   "train_s": 0.643242600001031,
+   "msg_per_s": 91901.95543517894,
+   "p50_ms": 0.01455000074201962,
+   "p95_ms": 0.020010000662296034,
+   "usd_per_1k": 0.0
+  },
+  "2. BoW + MLP (deep learning)": {
+   "accuracy": 0.9948387096774194,
+   "precision": 1.0,
+   "recall": 0.9603960396039604,
+   "f1": 0.9797979797979798,
+   "f1_SUB": 0.9473684210526316,
+   "train_s": 2.2804649000008794,
+   "msg_per_s": 109815.36849365474,
+   "p50_ms": 0.1490500008003437,
+   "p95_ms": 0.2057999995486167,
+   "usd_per_1k": 0.0
+  },
+  "3a. Encoder (MiniLM) + kNN": {
+   "accuracy": 0.9819354838709677,
+   "precision": 0.8990825688073395,
+   "recall": 0.9702970297029703,
+   "f1": 0.9333333333333333,
+   "f1_SUB": 0.9743589743589743,
+   "train_s": 1.2111574999998993,
+   "msg_per_s": 604.3515966305321,
+   "p50_ms": 5.59274999977788,
+   "p95_ms": 7.964984999580337,
+   "usd_per_1k": 0.0
+  },
+  "3b. Encoder (MiniLM) + LogReg": {
+   "accuracy": 0.9935483870967742,
+   "precision": 0.9705882352941176,
+   "recall": 0.9801980198019802,
+   "f1": 0.9753694581280787,
+   "f1_SUB": 1.0,
+   "train_s": 1.3616438000008202,
+   "msg_per_s": 3141.4469950619773,
+   "p50_ms": 3.9519000001746463,
+   "p95_ms": 5.147624998971875,
+   "usd_per_1k": 0.0
+  },
+  "3c. Encoder (MiniLM) + MLP head": {
+   "accuracy": 0.9909677419354839,
+   "precision": 0.9607843137254902,
+   "recall": 0.9702970297029703,
+   "f1": 0.9655172413793103,
+   "f1_SUB": 1.0,
+   "train_s": 1.8565319999997882,
+   "msg_per_s": 3155.7880206175005,
+   "p50_ms": 4.551999999421241,
+   "p95_ms": 6.945504999202966,
+   "usd_per_1k": 0.0
+  }
+ }
+}
