@@ -18,13 +18,16 @@
 
 | Mô hình | F1 test | F1 SUB 40 | p95 (ms/tin) | USD/1k |
 | --- | ---: | ---: | ---: | ---: |
-| BoW + LogReg | 0.931 | 0.857 | 0.020 | 0 |
-| BoW + MLP | 0.980 | 0.947 | 0.206 | 0 |
-| Embedding + kNN | 0.933 | 0.974 | 7.965 | 0 |
-| Embedding + LogReg | 0.975 | 1.000 | 5.148 | 0 |
-| Embedding + MLP head | 0.966 | 1.000 | 6.946 | 0 |
+| BoW + LogReg | 0.931 | 0.857 | 0.138 | 0 |
+| BoW + MLP | 0.980 | 0.947 | 0.405 | 0 |
+| Embedding + kNN | 0.933 | 0.974 | 58.910 | 0 |
+| Embedding + LogReg | 0.975 | 1.000 | 36.975 | 0 |
+| Embedding + MLP head | 0.966 | 1.000 | 33.590 | 0 |
+| LLM nhỏ zero-shot | 0.000 | 0.000 | 1402.289 | 0.007780 |
+| LLM lớn zero-shot | 0.000 | 0.000 | 1550.583 | 0.077800 |
+| LLM nhỏ few-shot | 0.000 | 0.000 | 1090.621 | 0.020045 |
 
-Notebook chạy với `SEED=8296`; bộ kiểm tra đạt `13/15`. Hai mục LLM và phép tính chi phí LLM không chạy vì không cấu hình API key.
+Notebook chạy với `SEED=8296`; bộ kiểm tra đạt `14/15`. LLM đã chạy và có số đo chi phí, nhưng check `4.1 + 4.4 call_openai / llm_classify_batch` chưa đạt; vì vậy F1 LLM bằng 0 cần được kiểm tra lại output/parse trước khi dùng làm kết luận chất lượng.
 
 ## 3. Dự đoán và thực tế
 
@@ -32,7 +35,7 @@ Trong thử thách cá nhân, BoW đúng 3/4 tin và Embedding + LogReg cũng đ
 
 ## 4. Phân tích 50 case khó
 
-Kết quả notebook cho thấy các mô hình embedding đạt F1 SUB cao hơn F1 test, trong khi BoW + LogReg giảm từ 0.931 xuống 0.857 trên SUB. Cần thận trọng khi diễn giải vì SUB chỉ có 40 tin; stress test 50 case mới là nơi đánh giá các kiểu diễn đạt khác phân phối.
+Kết quả notebook cho thấy các mô hình embedding đạt F1 SUB cao hơn F1 test, trong khi BoW + LogReg giảm từ 0.931 xuống 0.857 trên SUB. Các kết quả LLM đều có F1 bằng 0 dù đã có chi phí và độ trễ, nên cần kiểm tra check 4.1/4.4 và output thô trước khi kết luận LLM kém. Cần thận trọng khi diễn giải vì SUB chỉ có 40 tin; stress test 50 case mới là nơi đánh giá các kiểu diễn đạt khác phân phối.
 
 ## 5. Thử thách cá nhân
 
@@ -40,7 +43,7 @@ Kết quả notebook cho thấy các mô hình embedding đạt F1 SUB cao hơn 
 
 ## 6. Phương án cho sản phẩm thật
 
-Tất cả năm mô hình local đều đạt `p95 < 50 ms/tin`. Tôi chọn Embedding + LogReg vì F1 test `0.975`, F1 SUB `1.000`, p95 `5.148 ms/tin` và chi phí `0 USD/1k`; đánh đổi là throughput thấp hơn BoW và cần encoder. Đề xuất router: mô hình rẻ xử lý tin chắc chắn, chỉ chuyển tin có xác suất `p ∈ [0.3, 0.7]` hoặc có URL/yêu cầu dữ liệu nhạy cảm sang tầng kiểm tra thứ hai.
+Embedding + kNN không đạt SLA với p95 `58.910 ms/tin`; các mô hình local còn lại đạt `p95 < 50 ms/tin`. Tôi chọn Embedding + LogReg vì F1 test `0.975`, F1 SUB `1.000`, p95 `36.975 ms/tin` và chi phí `0 USD/1k`; đánh đổi là throughput thấp hơn BoW và cần encoder. LLM có p95 từ `1090.621` đến `1550.583 ms/tin`, không đạt SLA, đồng thời chi phí ước tính từ `0.007780` đến `0.077800 USD/1k`. Đề xuất router: mô hình rẻ xử lý tin chắc chắn, chỉ chuyển tin có xác suất `p ∈ [0.3, 0.7]` hoặc có URL/yêu cầu dữ liệu nhạy cảm sang tầng kiểm tra thứ hai.
 
 ## 7. AI log và điều đã học
 
